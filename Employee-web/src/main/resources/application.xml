@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns:context="http://www.springframework.org/schema/context"
+		xmlns:aop="http://www.springframework.org/schema/aop"
+		xmlns:tx="http://www.springframework.org/schema/tx"
+		xsi:schemaLocation="http://www.springframework.org/schema/beans
+							http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+							http://www.springframework.org/schema/context
+							http://www.springframework.org/schema/context/spring-context-4.3.xsd
+							http://www.springframework.org/schema/aop
+							http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+							http://www.springframework.org/schema/tx
+							http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+	<!-- 排除以下包含的文件 -->
+	<context:component-scan base-package="com.dianke.employee">
+		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+		<context:exclude-filter type="annotation" expression="org.springframework.web.bind.annotation.ControllerAdvice"/>
+	</context:component-scan>
+	
+	<!-- 引入jdbc.properties文件
+		system-properties-mode="NEVER" 不获取系统中对应的属性值，而是单纯获取文件中
+	 -->
+	<context:property-placeholder location="classpath:jdbc.properties,classpath:common.properties" system-properties-mode="NEVER" />
+	
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+		<property name="url" value="${url}"></property>
+		<property name="username" value="${username}"></property>
+		<property name="password" value="${password}"></property>
+		<property name="driverClassName" value="${driverClass}"></property>
+		<property name="initialSize" value="5"></property>
+		<!-- 最小的空闲数量 -->
+		<property name="minIdle" value="2"></property>
+		<property name="maxActive" value="8"></property>
+		<!-- 获取连接最大的等待时间，单位毫秒-->
+		<property name="maxWait" value="60000"></property>
+		
+		<!-- 检查连接是否有效, value 值根据数据库必须为有效的sql -->
+		<property name="validationQuery" value="select 1"></property>
+		<!-- 当连接不够的时候，申请链接先执行以上sql, 通常设置为false，为提高
+		性能，与validationQuery 配合使用-->
+		<property name="testOnBorrow" value="false"></property>
+		<!-- 归还连接的时候执行的，通常设置为false，为提高性能，与
+		validationQuery 配合使用-->
+		<property name="testOnReturn" value="false"></property>
+		<!-- 空闲的时候执行查询，通常设置为true,不影响性能，与validationQuery
+		配合使用-->
+		<property name="testWhileIdle" value="true"></property>
+		<!-- 空闲连接在连接池中最小的生存时间-->
+		<property name="minEvictableIdleTimeMillis"
+		value="300000"></property>
+		<!-- 打开PSCache，并且指定每个连接上PSCache 的大小,注意：如果用Oracle，
+		则把poolPreparedStatements 配置为true，mysql 可以配置为false。-->
+		<property name="poolPreparedStatements" value="false"></property>
+		<property name="maxPoolPreparedStatementPerConnectionSize" value="20"></property>
+	</bean>
+	
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<!-- 数据源 -->
+		<property name="dataSource" ref="dataSource"></property>
+		<!-- hibernate相关的配置 -->
+		<property name="mapperLocations" value="classpath:mapper/**/*.xml"></property>
+	</bean>
+	
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<!--   basePackages可以包含多个，如果有多个可以使用逗号或者分号分割开。
+		The {@code basePackage} property can contain more than one package name, separated by either
+	    commas or semicolons.
+	    -->
+		<property name="basePackage" value="com.dianke.employee.dao"></property>
+	</bean>
+	
+	<!-- 自动提交事务，报错自动回滚 -->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+	
+	<!-- 开启事务管理器 -->
+	<tx:annotation-driven transaction-manager="transactionManager"/>
+	
+	<!-- 开启AOP通知 -->
+	<aop:aspectj-autoproxy proxy-target-class="true"></aop:aspectj-autoproxy>
+	
+</beans>

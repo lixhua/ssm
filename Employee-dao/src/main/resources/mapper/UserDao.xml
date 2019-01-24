@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+ 	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ 	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dianke.employee.dao.UserDao">
+
+	<sql id="dynamicSql">
+		<where>
+			<if test="null != name and !''.equals(name.trim())">
+				name like #{name}
+			</if>
+			<if test="'-1' != gender and null != gender">
+				and gender = #{gender}
+			</if>
+			<if test="null != beginDate">
+				and birthday >= #{beginDate}
+			</if>
+			<if test="null != endDate">
+				<![CDATA[
+					and birthday <= #{endDate}
+				]]>
+			</if>
+		</where>
+	</sql>
+	
+	<select id="getPageDatas" resultType="com.dianke.employee.domain.User">
+		select * from user
+		<include refid="dynamicSql"></include>
+		limit #{beginIndex},#{limit}
+	</select>
+	
+	<select id="getTotal" resultType="long">
+		select count(*) from user
+		<include refid="dynamicSql"></include>
+	</select>
+	
+	<delete id="batchDelete">
+		delete from user where id in
+		<foreach collection="list" open="(" close=")" separator="," item="id">
+			#{id}
+		</foreach>
+	</delete>
+	
+</mapper>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dianke.employee.dao.SalaryCardDao">
+
+    <sql id="sDynamicSql">
+        <where>
+            <if test="null != swname and !''.equals(swname.trim())">
+                wname like #{swname}
+            </if>
+            <if test="null != beginRealWages">
+                and real_wages >= #{beginRealWages}
+            </if>
+            <if test="null != endRealWages">
+                <![CDATA[
+                    and real_wages <= #{endRealWages}
+                ]]>
+            </if>
+        </where>
+    </sql>
+
+    <select id="getPageDatas" resultType="com.dianke.employee.domain.SalaryCard">
+        select * from ( select * from salary_card
+        <include refid="sDynamicSql"></include>
+        <if test="null != orderBySql and !''.equals(orderBySql.trim())">
+            ORDER BY ${orderBySql}
+        </if>
+        ) s
+        limit #{beginIndex},#{limit}
+    </select>
+
+    <select id="getTotal" resultType="long">
+        select count(*) from salary_card
+        <include refid="sDynamicSql"></include>
+        <if test="null != orderBySql and !''.equals(orderBySql.trim())">
+             ORDER BY ${orderBySql}
+        </if>
+    </select>
+
+    <select id="generateExcel" resultType="com.dianke.employee.domain.SalaryCard">
+        select * from salary_card
+        <include refid="sDynamicSql"></include>
+        <if test="null != orderBySql and !''.equals(orderBySql.trim())">
+            ORDER BY ${orderBySql}
+        </if>
+    </select>
+
+    <insert id="importSalaryCard" parameterType="java.util.List">
+        insert into salary_card(wname,basic,bonus,fine,wage_payable,real_wages) values
+        <foreach collection="list" item="s" index="index" separator=",">
+            (#{s.wname},#{s.basic},#{s.bonus},#{s.fine},#{s.wage_payable},#{s.real_wages})
+        </foreach>
+    </insert>
+</mapper>

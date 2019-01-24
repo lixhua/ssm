@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+ 	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ 	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 	
+<mapper namespace="com.dianke.employee.dao.DeptDao">
+	<select id="getAll" resultType="com.dianke.employee.domain.Dept">
+		select * from dept
+	</select>
+	
+	<select id="getLong" resultType="Long">
+		select count(*) from dept
+	</select>
+	
+	<select id="getById" resultType="com.dianke.employee.domain.Dept">
+		select * from dept where deptno = #{deptno}
+	</select>
+	
+	<delete id="bachDelete">
+		delete from dept where deptno in
+		<foreach collection="list" open="(" close=")" separator="," item="deptnos">
+			#{deptnos}
+		</foreach>
+	</delete>
+	
+	<update id="upData">
+		update dept set dname = #{dname}, loc = #{loc} where deptno = #{deptno}
+	</update>
+	
+	<insert id="add">
+		insert into dept(deptno,dname,loc) values(#{deptno},#{dname},#{loc})
+	</insert>
+</mapper>

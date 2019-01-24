@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dianke.employee.dao.AttendanceDao">
+    <sql id="aDynamicSql">
+        <where>
+            <if test="null != aname and !''.equals(aname.trim())">
+                aname like #{aname}
+            </if>
+            <if test="null != normal">
+                and normal = #{normal}
+            </if>
+            <if test="null != beginDate and !''.equals(beginDate)">
+                and  createTime >= #{beginDate}
+            </if>
+            <if test="null != endDate and !''.equals(endDate)">
+                <![CDATA[
+					and  createTime <= #{endDate}
+				]]>
+            </if>
+            <if test="null != aleave">
+                and aleave = #{aleave}
+            </if>
+            <if test="null != absence">
+                and absence = #{absence}
+            </if>
+        </where>
+    </sql>
+
+    <select id="getPageDatas" resultType="com.dianke.employee.domain.Attendance">
+        select * from attendance
+        <include refid="aDynamicSql"></include>
+        limit #{beginIndex},#{limit}
+    </select>
+
+    <select id="getTotal" resultType="long">
+        select count(*) from attendance
+        <include refid="aDynamicSql"></include>
+    </select>
+
+    <select id="generateExcel" resultType="com.dianke.employee.domain.Attendance">
+        select * from attendance
+        <include refid="aDynamicSql"></include>
+    </select>
+
+    <insert id="importAttendance" parameterType="java.util.List">
+        insert into attendance(aname,normal,aleave,late,leave_early,absence) values
+        <foreach collection="list" item="a" index="index" separator=",">
+            (#{a.aname},#{a.normal},#{a.aleave},#{a.late},#{a.leave_early},#{a.absence})
+        </foreach>
+</insert>
+</mapper>
